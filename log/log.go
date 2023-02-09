@@ -15,15 +15,9 @@ const (
 )
 
 var (
-	Logger ILogger
+	Logger *logrus.Logger
 	once   sync.Once
 )
-
-type ILogger interface {
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-}
 
 type opt struct {
 	path       string
@@ -65,16 +59,14 @@ func WithMaxAge(maxAge time.Duration) Option { return func(o *opt) { o.maxAge = 
 func InitLogger(opts ...Option) {
 	o := newOpt(opts...)
 	once.Do(func() {
-		logger := logrus.New()
-		logger.SetLevel(logrus.AllLevels[o.level%len(logrus.AllLevels)])
-		logger.SetReportCaller(o.hasCaller)
-		logger.SetFormatter(&logrus.TextFormatter{
+		Logger.SetLevel(logrus.AllLevels[o.level%len(logrus.AllLevels)])
+		Logger.SetReportCaller(o.hasCaller)
+		Logger.SetFormatter(&logrus.TextFormatter{
 			ForceColors:     o.hasColor,
 			DisableColors:   !o.hasColor,
 			TimestampFormat: o.timeFormat,
 		})
-		logger.AddHook(fileLoggerHook(o))
-		Logger = logger
+		Logger.AddHook(fileLoggerHook(o))
 	})
 }
 
